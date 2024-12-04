@@ -23,7 +23,7 @@ See https://git-scm.com/download/win to download an installer.
 **This version is incomplete it needs a Content Decryption Module before a video may be decrypted**
 * !!!YOU WILL NEED!!! A CDM (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS
 
-Note a working CDM is installed with UK-FTA
+Note a working CDM is NOT installed with UK-FTA
 * get_iplayer see https://github.com/get-iplayer/get_iplayer/releases
 
 * On Linux or  Windows the above binary files need to be in your System's PATH
