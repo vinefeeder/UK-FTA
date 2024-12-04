@@ -20,7 +20,8 @@ subby is installed - in Terminal -  by:-
 On windows the cloning agent - git - may need installing before subby may be downloaded (cloned).
 See https://git-scm.com/download/win to download an installer.
 
-* !!!OPTIONAL!!! A CDM (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS
+**This version is incomplete it needs a Content Decryption Module before a video may be decrypted**
+* !!!YOU WILL NEED!!! A CDM (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS
 
 Note a working CDM is installed with UK-FTA
 * get_iplayer see https://github.com/get-iplayer/get_iplayer/releases
