@@ -1,0 +1,24 @@
+You need to have some binaries installed and on your system's Path.
+For your security find them from source.
+
+They need to be on your system's Path, 
+For linux installng to  /home/user/.local/bin/   is ideal
+For Windows it is less clear cut.
+If you know how to create a folder and then add the folder to
+the Windows systems Environment Path, then do that and place all your binaries
+in the new folder.
+(I have cheated in the past and used C:\Windows\System32\)
+
+The binary list:
+* Python 3.10 or later installed with Linux: or Windows install from the Windows Store
+* ffmpeg (https://github.com/FFmpeg/FFmpeg) https://www.videohelp.com/software/ffmpeg  or Linux distro
+* N-m3u8DL-RE (https://github.com/nilaoda/N_m3u8DL-RE/releases)
+* mp4decrypt (https://github.com/axiomatic-systems/Bento4)
+* MKVMerge from MKVToolNix  https://mkvtoolnix.download/downloads.html  https://www.videohelp.com/software/MKVToolNix
+* Shaka-packager  https://github.com/shaka-project/shaka-packager/releases  rename the binary to shaka-packager
+* get_iplayer see https://github.com/get-iplayer/get_iplayer/releases
+Note: Most sites are encrypted and need the following.  BBC and STV mainly do not.
+*[Included with his release is A Content Decryption Module, (CDM)],  (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS 
+
+
+You will also need a text editor nano for Linux and notepad for Windows.
