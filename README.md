@@ -51,15 +51,13 @@ Choose the config option in menu.py and alter my example save path to your own u
 edit the paths therein for your system.
 NOTE: A working CDM is included. No configuration is needed.
 
-**My5 no longer needs further configuration before running.**
-My5 HMAC and AES should update automatically without user intervention.
-However you can force a manual update direct from My5 from the menu.
-
+**My5 will need further configuration before running.**
+My5 HMAC and AES should be first updated by selecting 'Update My5' button.
+This is a weekly task befor e downloading My5 content
 
 ## Usage
 
 ```
-python menu.py (from inside UK-FTA folder), or preferably
 python gui.py
 
 At first use check the configuration in config - particularly the save-path.
@@ -68,7 +66,7 @@ Set to True download will be deferred until the Batch Download menu button is cl
 If you wish to use your own scheduler to start UK-FTA/ukfta/getbatch.py edit the getbatch.py 
 where advised.
 
-Eventually menu.py will be phased out.  As part of this process menu.py remains as 14.8 release
+Ev
 ``
 ## Addendum
 There is a backup method for getting my5 HMAC-SECRET and AES-KEY as an option in the menu. 
