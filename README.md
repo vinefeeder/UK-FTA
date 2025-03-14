@@ -41,9 +41,15 @@ Briefly:
     source env/bin/activate  # linux
     .\env\Scripts\activate   # windows
 
+On windows, if you have errors with module not found, try reinstalling requirements.txt and upgrading...
+python -m pip intall - r requirements.txt --upgrade
+Then in the top level folder remove the folder __pycache__/ so it  will be recreated.
+
 Modules needed:
     You may either run the 'runonce.py' python file in UK-FTA folder 'python runconce.py' or by
     pip install -r requirements.txt from the command line
+    or to upgrade all modules
+    pip install -r requirements.txt --upgrade
 ```
 ## config
 **Be sure to configure your save path before running this suite of scripts**
