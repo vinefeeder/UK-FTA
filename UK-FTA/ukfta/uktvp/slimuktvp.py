@@ -70,7 +70,7 @@ def get_keys(pssh, license_url):
 
 
 def download(url):
-    response = client.get(url)
+    response = client.get(url,follow_redirects=True)
     videoid = (url.split('?')[0]).split('/')[7]
     videonamesplit = url.split('/',7) 
     title =  videonamesplit[4].title()    
