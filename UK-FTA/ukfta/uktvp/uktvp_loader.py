@@ -90,7 +90,7 @@ def get_next_data(brand_slug):
             episode_data = json.loads(response.content)['episodes'][episode_index]
             episode_number = episode_data['episode_number']
             video_id = episode_data['watch_online_link'].split('/')[6]
-            video_url = f"https://uktvplay.co.uk/shows/{brand_slug}/series-{series_number}/episode-{episode_number}/{video_id}"
+            video_url = f"https://u.co.uk/shows/{brand_slug}/series-{series_number}/episode-{episode_number}/{video_id}"
             video_data.append((series_number, episode_number, video_url))
             sql = f"INSERT OR IGNORE INTO videos(series, episode, url) VALUES(?, ?, ?);"
             cursor.execute(sql, (series_number, episode_number, video_url))
