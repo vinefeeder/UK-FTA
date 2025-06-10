@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QPushButton, QCheckBox, QFrame, QMessageBox
+    QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QPushButton, QCheckBox, QFrame, QMessageBox, QHBoxLayout
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPalette, QColor
@@ -17,17 +17,23 @@ from base64 import b64encode
 import codecs
 from pathlib import Path
 import os
+import shlex
 
-# do not change order here
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-from configs import  config
-SAVE_PATH = config.SAVEPATH
-BATCH_DOWNLOAD = config.BATCH_DOWNLOAD
+import time
 
-WVD_PATH = config.WVDPATH
-global SUBPROCESS_COMMAND
-#WVD_PATH = "./device.wvd"
+import logging
+####
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    handlers=[logging.FileHandler("http_debug.log"), logging.StreamHandler()]
+)
+
+# Suppress too verbose logs from other modules if desired
+logging.getLogger("httpx").setLevel(logging.DEBUG)
+logging.getLogger("httpcore").setLevel(logging.DEBUG)
+####
+WVD_PATH = "./device.wvd"
 WIDEVINE_SYSTEM_ID = 'EDEF8BA9-79D6-4ACE-A3C8-27DCD51D21ED'
 
 class DownloadThread(QThread):
@@ -78,9 +84,13 @@ class AllHell3App(QWidget):
         self.fetch_keys_button.clicked.connect(self.fetch_keys)
         highlighted_layout.addWidget(self.fetch_keys_button)
 
-        self.download_button = QPushButton("Download Video")
+        self.download_button = QPushButton("Download Nm~RE")
         self.download_button.clicked.connect(self.download_video)
         highlighted_layout.addWidget(self.download_button)
+
+        self.download_button2 = QPushButton("Download DASH")
+        self.download_button2.clicked.connect(self.download_dash)
+        highlighted_layout.addWidget(self.download_button2)
 
         layout.addWidget(highlighted_frame)
 
@@ -92,18 +102,34 @@ class AllHell3App(QWidget):
         self.n_m3u8dl_re_output = QTextEdit()
         layout.addWidget(self.n_m3u8dl_re_output)
 
-        self.subprocess_label = QLabel("Subprocess command")
-        layout.addWidget(self.subprocess_label)
-        self.subprocess_output = QTextEdit()
-        layout.addWidget(self.subprocess_output)
+        self.dash_mpd_cli_label = QLabel("Dash-MPD-CLI command")
+        layout.addWidget(self.dash_mpd_cli_label)
+        self.dash_mpd_cli_output = QTextEdit()
+        layout.addWidget(self.dash_mpd_cli_output)
 
+        checkbox_layout = QHBoxLayout()
         self.dark_mode_checkbox = QCheckBox("Dark Mode")
         self.dark_mode_checkbox.setChecked(True)
         self.dark_mode_checkbox.stateChanged.connect(self.toggle_dark_mode)
-        layout.addWidget(self.dark_mode_checkbox, alignment=Qt.AlignmentFlag.AlignLeft)
+        checkbox_layout.addWidget(self.dark_mode_checkbox)
+
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.clicked.connect(self.reset_fields)
+        checkbox_layout.addWidget(self.reset_button)
+
+        layout.addLayout(checkbox_layout)
 
         self.setLayout(layout)
         self.toggle_dark_mode()
+
+    def reset_fields(self):
+        self.mpd_url_entry.clear()
+        self.curl_text.clear()
+        self.video_name_entry.clear()
+        self.keys_output.clear()
+        self.n_m3u8dl_re_output.clear()
+        self.dash_mpd_cli_output.clear()
+
 
     def toggle_dark_mode(self):
         if self.dark_mode_checkbox.isChecked():
@@ -127,7 +153,7 @@ class AllHell3App(QWidget):
             self.curl_label.setStyleSheet("color: white;")
             self.video_name_label.setStyleSheet("color: white;")
             self.n_m3u8dl_re_label.setStyleSheet("color: white;")
-            self.subprocess_label.setStyleSheet("color: white;")
+            self.dash_mpd_cli_label.setStyleSheet("color: white;")
             self.dark_mode_checkbox.setStyleSheet("color: white;")
             self.fetch_keys_button.setStyleSheet("""color: white;
                                                 background-color: #4e4e4e;
@@ -137,6 +163,12 @@ class AllHell3App(QWidget):
                                                 background-color: #4e4e4e;
                                                 border: 1px solid #6e6e6e;
                                                 padding: 5px;""")
+            
+            self.download_button2.setStyleSheet("""color: white;
+                                                background-color: #4e4e4e;
+                                                border: 1px solid #6e6e6e;
+                                                padding: 5px;""")
+            
             self.curl_text.setStyleSheet("""color: white; border: 1px solid red;
                                             background-color: #232323;""")
             self.video_name_label.setStyleSheet("""
@@ -151,7 +183,7 @@ class AllHell3App(QWidget):
             self.curl_label.setStyleSheet("color: black;")
             self.video_name_label.setStyleSheet("color: black;")
             self.n_m3u8dl_re_label.setStyleSheet("color: black;")
-            self.subprocess_label.setStyleSheet("color: black;")
+            self.dash_mpd_cli_label.setStyleSheet("color: black;")
             self.dark_mode_checkbox.setStyleSheet("color: black;")
             self.fetch_keys_button.setStyleSheet("""color: black;
                                                 background-color: #aeaeae;
@@ -161,6 +193,11 @@ class AllHell3App(QWidget):
                                                 background-color: #aeaeae;
                                                 border: 1px solid #6e6e6e;
                                                 padding: 5px;""")
+            self.download_button2.setStyleSheet("""color: black;
+                                                background-color: #aeaeae;
+                                                border: 1px solid #6e6e6e;
+                                                padding: 5px;""")
+            
             self.curl_text.setStyleSheet("""color: black; border: 1px solid red;
                                             background-color: white;""")
             self.video_name_label.setStyleSheet("""
@@ -220,11 +257,14 @@ class AllHell3App(QWidget):
                 # No pssh or default_KID found
                 try:
                     pssh = self.get_pssh_from_mpd(self.mpd_url_entry.text())  # init.m4f method
+                    if pssh:
+                        return pssh
+                    else:
+                        return None
                 except:
                     return None
 
         except ET.ParseError as e:
-            # probably not an MPD file but still maybe Widevine with pssh in init.m4a
             try:
                 pssh = self.get_pssh_from_mpd(self.mpd_url_entry.text())  # init.m4f method
                 return pssh
@@ -235,7 +275,7 @@ class AllHell3App(QWidget):
 
         
     def get_pssh_from_mpd(self, mpd: str):
-        print("Extracting PSSH from first video segment...")
+        print("Extracting PSSH from MPD...")
 
         yt_dl = 'yt-dlp'
         init = 'init.m4f'
@@ -250,24 +290,8 @@ class AllHell3App(QWidget):
         try:
             subprocess.run([yt_dl, '-q', '--no-warning', '--test', '--allow-u', '-f', 'bestvideo[ext=mp4]/bestaudio[ext=m4a]/best', '-o', init, mpd])
         except FileNotFoundError:
-            print("yt-dlp not found. Trying to download it...")
-            subprocess.run(['pip', 'install', 'yt-dlp'])
-            import yt_dlp
-
-            ydl_opts = {
-                'format': 'bestvideo[ext=mp4]/bestaudio[ext=m4a]/best',
-                'allow_unplayable_formats': True,
-                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-                'no_warnings': True,
-                'quiet': True,
-                'outtmpl': init,
-                'no_merge': True,
-                'test': True,
-            }
-
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info_dict = ydl.extract_info(mpd, download=True)
-                video_file_name = ydl.prepare_filename(info_dict)
+            print("yt-dlp not found. Trying installing it...")
+            exit(0)
 
         pssh_list = self.extract_pssh_from_file('init.m4f')
         pssh = None
@@ -319,6 +343,8 @@ class AllHell3App(QWidget):
         headers_matches = re.findall(r"-H\s+'([^:]+):\s*(.*?)'", curl_command)
         for header in headers_matches:
             headers[header[0]] = header[1]
+        headers["User-Agent"] = "okhttp/4.9.3"
+        print(headers)
 
         data_match = re.search(r"--data(?:-raw)?\s+(?:(\$?')|(\$?{?))(.*?)'", curl_command, re.DOTALL)
         if data_match:
@@ -335,6 +361,16 @@ class AllHell3App(QWidget):
         else:
             data = ""
         return url, method, headers, data
+    
+    def safe_post_with_backoff(self, url, headers, data, max_retries=5, base_delay=2):
+        for attempt in range(max_retries):
+            response = httpx.post(url, headers=headers, data=data)
+            if response.status_code != 429:
+                return response
+            wait = base_delay * (2 ** attempt)
+            print(f"Rate limited. Retrying in {wait}s...")
+            time.sleep(wait)
+        response.raise_for_status()  # Still raise error if all retries fail
 
     def get_key(self, pssh, license_url, headers, data):
         device = Device.load(WVD_PATH)
@@ -355,7 +391,13 @@ class AllHell3App(QWidget):
 
         payload = challenge if data is None else challenge
 
-        license_response = httpx.post(url=license_url, data=payload, headers=headers)
+        #license_response = httpx.post(url=license_url, data=payload, headers=headers)
+        ###
+        with httpx.Client(http2=True) as client:
+            #license_response = client.post(url=license_url, data=payload, headers=headers)
+            license_response = self.safe_post_with_backoff(license_url, headers, payload)
+        ###
+
         try:
             license_response.raise_for_status()
         except httpx.HTTPStatusError as e:
@@ -380,7 +422,7 @@ class AllHell3App(QWidget):
                 keys.append(f"--key {key.kid.hex}:{key.key.hex()}")
 
         cdm.close(session_id)
-        return "\n".join(keys)
+        return keys
 
     def fetch_keys(self):
         mpd_url = self.mpd_url_entry.text()
@@ -388,41 +430,43 @@ class AllHell3App(QWidget):
             mpd_content = self.fetch_mpd_content(mpd_url)
             pssh = self.extract_or_generate_pssh(mpd_content)
             if not pssh:
-                QMessageBox.critical(self, "Error", "Failed to extract or generate PSSH.")
+                QMessageBox.critical(self, "Error", "Failed to extract or generate PSSH\nAre you sure the video is Widevine encrypted?.")
                 return
 
             curl_command = self.curl_text.toPlainText().strip()
             license_url, method, headers, data = self.parse_curl(curl_command)
             keys = self.get_key(pssh, license_url, headers, data)
             self.keys_output.clear()
-            self.keys_output.append(keys)
+            self.keys_output.append("\n".join( keys))
+            key_str = " ".join(keys)
+            
+            self.n_m3u8dl_re_command = f"N_m3u8DL-RE '{mpd_url}' {key_str} --save-name {self.video_name_entry.text()} -mt -M:format=mkv:muxer=mkvmerge"
+            self.n_m3u8dl_re_output.setText(self.n_m3u8dl_re_command)
 
-            n_m3u8dl_re_command = f"N_m3u8DL-RE '{mpd_url}' {keys} --save-name {self.video_name_entry.text()} -mt -M:format=mkv:muxer=mkvmerge"
-            self.n_m3u8dl_re_output.setText(n_m3u8dl_re_command)
+            self.dash_mpd_cli_command = f"dash-mpd-cli --quality best --muxer-preference mkv:mkvmerge {key_str} \"{mpd_url}\" --write-subs --output '{self.video_name_entry.text()}.mkv'"
 
-            subprocess_command = ['N_m3u8DL-RE', mpd_url] + keys.split() + ['--save-name', self.video_name_entry.text(), '-mt', '-M', 'format=mkv:muxer=mkvmerge']
-            auto_subprocess_command = ['N_m3u8DL-RE', mpd_url] + keys.split() + ['--auto-select', '--save-name', self.video_name_entry.text(), '--save-dir', SAVE_PATH, '-mt', '-M', 'format=mkv:muxer=mkvmerge']
-            self.subprocess_output.setText(str(subprocess_command))
-            global SUBPROCESS_COMMAND
-            SUBPROCESS_COMMAND = auto_subprocess_command
+            self.dash_mpd_cli_output.setText(str(self.dash_mpd_cli_command))
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 
     def download_video(self):
-        if BATCH_DOWNLOAD:
-            with open(f'{SAVE_PATH}/batch.txt', 'a') as f:
-                print(f"Saving to {SAVE_PATH}/batch.txt")
-                f.write(' '.join(SUBPROCESS_COMMAND) + '\n')
-        else:
-            try:
-                subprocess_command = eval(self.subprocess_output.toPlainText())
-                self.thread = DownloadThread(subprocess_command)
-                self.thread.finished.connect(self.on_download_finished)
-                self.thread.error.connect(self.on_download_error)
-                self.thread.start()
-            except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+        try:
+            self.thread = DownloadThread(shlex.split(self.n_m3u8dl_re_command))
+            self.thread.finished.connect(self.on_download_finished)
+            self.thread.error.connect(self.on_download_error)
+            self.thread.start()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+    def download_dash(self):
+        try:
+            self.thread = DownloadThread(shlex.split(self.dash_mpd_cli_command))
+            self.thread.finished.connect(self.on_download_finished)
+            self.thread.error.connect(self.on_download_error)
+            self.thread.start()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
 
     def on_download_finished(self):
         QMessageBox.information(self, "Success", "Download finished successfully.")
