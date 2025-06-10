@@ -1,8 +1,10 @@
-# A_n_g_e_l_a  20:09:2023
+# A_n_g_e_l_a  20:09:2023 
+# Reworked June 2025 to 1080p
+
 # script to download videos from direct URL entry.
 # Called as the downloader from itv_loader.py
 
-# uses WKS-KEYS or pywidevine scroll to edit choices
+# uses pywidevine 
 # folder structures are created of the form ./output/ITV/'series-title'/'videos name'
 
 
@@ -11,7 +13,7 @@ import subprocess
 from base64 import b64encode
 from pathlib import Path
 import httpx
-from httpx import URL, Client
+from httpx import  Client
 from selectolax.lexbor import LexborHTMLParser
 from beaupy.spinners import *
 import os
@@ -20,10 +22,10 @@ import pyfiglet as PF
 import json
 import jmespath
 import sys
-import sys
-import os, glob, time
+import os, glob
 from rich.console import Console
 from scrapy import Selector
+import time
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,32 +36,21 @@ from configs import  config
 WVD_PATH = config.WVDPATH
 SAVE_PATH = Path(config.SAVEPATH)
 BATCH_DOWNLOAD = config.BATCH_DOWNLOAD
+SAVE_PATH.mkdir(exist_ok=True, parents=True)
 
-try:
-    SAVE_PATH.mkdir(exist_ok=True, parents=True)
-except:
-    print("Error creating directory. Have you set up your save folder from Config in the menu?")
-
-# GLOBALS
-#OUT_PATH = Path('output')
-#OUT_PATH.mkdir(exist_ok=True, parents=True)
-
-global SUBS
-
+SUBS = False
 
 console = Console()
 
 class ITV:
     def __init__(self):
-        self.host = 'itvpnpdotcom.blue.content.itv.com'
         timeout = httpx.Timeout(10.0, connect=60.0)
         self.client = Client(
             headers={
-                'authority': 'www.itv.com',
-                'user-agent': 'Dalvik/2.9.8 (Linux; U; Android 9.9.2; ALE-L94 Build/NJHGGF)',
-                'accept': '*/*',
-                'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-                'Referer': 'https://www.itv.com/',
+                "User-Agent": "okhttp/4.9.3",
+                "Accept-Language": "en-US,en;q=0.8",
+                "Origin": "https://www.itv.com",
+                "Connection": "keep-alive",
             },
         timeout=timeout,
         )
@@ -75,6 +66,7 @@ class ITV:
             '_-_': '_',
             '&': 'and',
             ':': '',
+            '_Content': '',
         }
         for rep in replacements:  
             string = string.replace(rep, replacements[rep])
@@ -83,6 +75,7 @@ class ITV:
     
     def get_pssh(self, mpd_url: str) -> str:
         r = self.client.get(mpd_url)
+        r.raise_for_status()
         kid = (
             LexborHTMLParser(r.text)
             .css_first('ContentProtection')
@@ -111,8 +104,6 @@ class ITV:
             if key.type == 'CONTENT':
                 keys.append(f"{key.kid.hex}:{key.key.hex()}")
 
-
-        #keys = [key.key.hex() for key in cdm.get_keys(session_id) if key.type != 'SIGNING']
         cdm.close(session_id)
 
         return ":".join(keys)
@@ -174,8 +165,8 @@ class ITV:
         except:
             SUBS = False  
 
-        mpd_url = [f'{video["Base"]}{y}' for x in media if (y := URL(x['Href'])).path.endswith('.mpd')][0]
-        lic_url = [x['KeyServiceUrl'] for x in media][0]
+        mpd_url = video['MediaFiles'][0]['Href']
+        lic_url = video['MediaFiles'][0]['KeyServiceUrl']
 
         pssh = self.get_pssh(mpd_url)
         key = self.get_key(pssh, lic_url)
@@ -217,7 +208,7 @@ class ITV:
             with open(f'{SAVE_PATH}/batch.txt', 'a') as f:
                 f.write(' '.join(cleaned_command) + '\n')
         else:
-            print(command)
+            #print(command)
             subprocess.run(command)
             print(f"File saved to {OUT_PATH}/{title}")
         
@@ -232,8 +223,7 @@ class ITV:
         spinner = Spinner(DOTS)
         spinner.start()
         headers={
-        'authority': 'www.itv.com',
-        'user-agent': 'Dalvik/2.9.8 (Linux; U; Android 9.9.2; ALE-L94 Build/NJHGGF)',
+
         'Referer': 'https://www.itv.com/',
         }
         # Films seem to have some sort protection in that normal data rules do not apply
@@ -259,7 +249,11 @@ class ITV:
                     }""", myjson
                 )
             url =f"https://www.itv.com/watch/{res['programmeSlug']}/{res['programmeId']}/{episodeId}"    
-        r = self.client.get(url, headers=headers, follow_redirects=True)
+        r = self.client.get(url,  follow_redirects=True)
+        mycookies = self.client.cookies.jar
+        self.cookie_header_value = "; ".join([f"{c.name}={c.value}" for c in mycookies])
+
+    
         if r.status_code == 200:
             sel = Selector(text = r.text)
             selected = sel.xpath('//*[@id="__NEXT_DATA__"]').extract()
@@ -301,17 +295,47 @@ class ITV:
             extendtitle = f"{episodetitle}_{channel}_S{series}E{episode}"
             magni_url = jmespath.search('[ seriesList.[*].titles.[*].playlistUrl , episode.playlistUrl]', myjson)
             magni_url = (next (item for item in magni_url if item is not None))
-            features = ['mpeg-dash', 'widevine', 'outband-webvtt', 'hd', 'single-track']
             
-            payload = {
-                'client': {'id': 'browser'},
-                'variantAvailability': {
-                    'featureset': {'min': features, 'max': features},
-                    'platformTag': 'dotcom',
-                }
+            payload =   {
+                        "client": {
+                            "id": "lg"
+                        },
+                        "device": {
+                            "deviceGroup": "ctv"
+                        },
+                        "variantAvailability": {
+                            "player": "dash",
+                            "featureset": [
+                            "mpeg-dash",
+                            "widevine",
+                            "outband-webvtt",
+                            "hd",
+                            "single-track"
+                            ],
+                            "platformTag": "ctv",
+                            "drm": {
+                            "system": "widevine",
+                            "maxSupported": "L3"
+                            }
+                        }
+                        }
+            payload = json.dumps(payload)
+   
+            headers = {
+            "Accept": "application/vnd.itv.vod.playlist.v4+json",
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            "Accept-Language": "en-US,en;q=0.9,da;q=0.8",
+            "Connection": "keep-alive",
+            "Content-Type": "application/json",
+            "Content-Length": str(len(payload)),
+            "Cookie": self.cookie_header_value,
+            'Host':'magni.itv.com',
+            'User-Agent': 'okhttp/4.9.3',
             }
-            
-            r = self.client.post(magni_url, json=payload)
+           
+            r = self.client.post(magni_url, headers=headers, content=payload)
+
+            #console.print_json(data=r.json())
             spinner.stop()
             return title, extendtitle, r.json()
         else:
@@ -328,8 +352,6 @@ class ITV:
             else:
                 print("A correct download url has 'watch/<video-title>/<alpha-numeric>' in the line.") 
                 continue  
-        #print(url)
-        #url = url.encode('utf-8', 'ignore').decode().strip()
         self.download(url, 'No')
         return 0
 
@@ -363,3 +385,4 @@ if __name__ == "__main__":
     myITV.run()
     cleanup()
     exit(0)
+
