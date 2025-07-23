@@ -20,10 +20,9 @@ subby is installed - in Terminal -  by:-
 On windows the cloning agent - git - may need installing before subby may be downloaded (cloned).
 See https://git-scm.com/download/win to download an installer.
 
-**This version is incomplete it needs a Content Decryption Module before a video may be decrypted**
-* !!!YOU WILL NEED!!! A CDM (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS
+* !!!OPTIONAL!!! A CDM (device_private_key and device_client_blob) pointed to by a wvd file https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS
 
-Note a working CDM is NOT installed with UK-FTA
+Note a working CDM is installed with UK-FTA
 * get_iplayer see https://github.com/get-iplayer/get_iplayer/releases
 
 * On Linux or  Windows the above binary files need to be in your System's PATH
@@ -41,15 +40,9 @@ Briefly:
     source env/bin/activate  # linux
     .\env\Scripts\activate   # windows
 
-On windows, if you have errors with module not found, try reinstalling requirements.txt and upgrading...
-python -m pip intall - r requirements.txt --upgrade
-Then in the top level folder remove the folder __pycache__/ so it  will be recreated.
-
 Modules needed:
     You may either run the 'runonce.py' python file in UK-FTA folder 'python runconce.py' or by
     pip install -r requirements.txt from the command line
-    or to upgrade all modules
-    pip install -r requirements.txt --upgrade
 ```
 ## config
 **Be sure to configure your save path before running this suite of scripts**
@@ -57,13 +50,15 @@ Choose the config option in menu.py and alter my example save path to your own u
 edit the paths therein for your system.
 NOTE: A working CDM is included. No configuration is needed.
 
-**My5 will need further configuration before running.**
-My5 HMAC and AES should be first updated by selecting 'Update My5' button.
-This is a weekly task befor e downloading My5 content
+**My5 no longer needs further configuration before running.**
+My5 HMAC and AES should update automatically without user intervention.
+However you can force a manual update direct from My5 from the menu.
+
 
 ## Usage
 
 ```
+python menu.py (from inside UK-FTA folder), or preferably
 python gui.py
 
 At first use check the configuration in config - particularly the save-path.
@@ -72,7 +67,7 @@ Set to True download will be deferred until the Batch Download menu button is cl
 If you wish to use your own scheduler to start UK-FTA/ukfta/getbatch.py edit the getbatch.py 
 where advised.
 
-Ev
+Eventually menu.py will be phased out.  As part of this process menu.py remains as 14.8 release
 ``
 ## Addendum
 There is a backup method for getting my5 HMAC-SECRET and AES-KEY as an option in the menu. 
@@ -81,5 +76,3 @@ Normally it will not need to be used.
 If ever the website that hosts current HYMAC and AES data goes down, then use the updater here.
 If you get errors from Selenium complaining of 'No Driver Found' then be sure to create a python environment first.
 See https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS and the section 'Running python scripts in a special Python environment', and set up an environment in which UK-FTA will run. It keeps all UK-FTA modules separate from other scripts you may have on your system.
-
-*Note: Talking Pictures TV does not work in batch mode.
