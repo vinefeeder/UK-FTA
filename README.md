@@ -76,3 +76,10 @@ Normally it will not need to be used.
 If ever the website that hosts current HYMAC and AES data goes down, then use the updater here.
 If you get errors from Selenium complaining of 'No Driver Found' then be sure to create a python environment first.
 See https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS and the section 'Running python scripts in a special Python environment', and set up an environment in which UK-FTA will run. It keeps all UK-FTA modules separate from other scripts you may have on your system.
+
+## Images
+
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA1.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA2.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA3.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA4.png)
