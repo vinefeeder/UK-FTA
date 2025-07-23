@@ -79,7 +79,7 @@ See https://forum.videohelp.com/threads/411862-Beyond-WKS-KEYS and the section '
 
 ## Images
 
-    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA1.png)
-    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA2.png)
-    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA3.png)
-    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/UK-FTA4.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/1.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/2.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/3.png)
+    ![UK-FTA GUI](https://github.com/vinefeeder/UK-FTA/blob/main/img/4.png)
