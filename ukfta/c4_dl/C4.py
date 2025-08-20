@@ -78,6 +78,7 @@ DEFAULT_HEADERS = {
 MPD_HEADERS = {
     'Content-type': 'application/dash+xml',
     'Accept': '*/*',
+    'Origin': "ak-jos-c4assets-com.akamaized.net",
     'Referer': 'https://www.channel4.com/',
     "user-agent": "Dalvik/2.1.0 (Linux; U; Android 12; SM-G930F Build/SQ1D.220105.007)"
 }
