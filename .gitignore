@@ -1,0 +1,17 @@
+*.mkv
+*.mp4
+*.exe
+*.dll
+*.crt
+#*.wvd
+*.prd
+*.der
+*.pem
+*.bin
+*.db
+*.ttf
+*.otf
+".json
+device_cert
+device_client_id_blob
+device_private_key

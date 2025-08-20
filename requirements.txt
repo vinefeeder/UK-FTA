@@ -11,7 +11,7 @@ Requests
 rich
 Scrapy
 selectolax
-selenium=
+selenium
 setuptools
 termcolor
 yt_dlp
