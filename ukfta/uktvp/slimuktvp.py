@@ -26,7 +26,7 @@ try:
 except:
     print("Error creating save directory. Have you set up your save folder from Config in the menu?")
 
-client = Client()
+client = Client(follow_redirects=True)
 console = Console()
 
 pk = "BCpkADawqM3mRF3li7oN1VwF3bfyxCYv583LL7PXT9gsFqMM98mgjUBmr0i_q0HXahTvuoeLpXIzODv4n7wjaErBpIWJ3oPQvFQ298UdE8e2mKl_-EYP8CKk8OkovAM6c8XhZgz4o9SckCamNkocUu4H1pJL5yL4UtY7RA"

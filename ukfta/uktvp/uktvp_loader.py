@@ -25,7 +25,7 @@ from rich.prompt import Prompt
 import sys
 import slimuktvp as uktvp
 
-client = Client()
+client = Client(follow_redirects=True)
 console = Console()
 
 CURSOR_UP_ONE = "\033[F"
