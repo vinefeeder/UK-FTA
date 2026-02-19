@@ -1,3 +1,6 @@
+This suite of scripts to download UK Free to Air videos has now reached end of life. 
+Please use TwinVine for the same purpose https://github.com/vinefeeder/TwinVine
+
 Note: Windows users. Use 'Terminal' from the Microsoft Store instead of the cmd window. It produces far less problems and just works.
 ## Requirements
 * Python 3.10 and upwards.
